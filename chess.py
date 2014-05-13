@@ -41,7 +41,6 @@ chess2 = [ [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0
 
 class Piece:
     def __init__(self, color):
-        print("cons Piece")
         self.color = color
 
     def place(self, h, v):
@@ -53,21 +52,18 @@ class Piece:
 
 class PieceBlanche(Piece):
     def __init__(self):
-        print("cons PieceBlanche")
         Piece.__init__(self, 'blanc')
 
 class PieceNoire(Piece):
     def __init__(self):
-        print("cons PieceNoire")
         Piece.__init__(self, 'noir')
 
 class Pion(Piece):
     def __init__(self):
-        print("cons Pion")
+        pass
 
 class PionBlanc(Pion, PieceBlanche):
     def __init__(self):
-        print("cons PionNoir")
         Pion.__init__(self)
         PieceBlanche.__init__(self)
         #self.color = 'blanc'
@@ -86,12 +82,23 @@ class PionBlanc(Pion, PieceBlanche):
             x = whatPos(self.h, self.v+1)
             if isinstance(x, CaseVide):
                 moves.append((self.h, self.v+1))
+        return moves
 
+    def getControls(self):
+        moves = []
+        if self.v < 7:
+            if self.h > 0:
+                x = whatPos(self.h-1, self.v+1)
+                if isinstance(x, PieceNoire):
+                    moves.append((self.h-1, self.v+1))
+            if self.h < 7:
+                x = whatPos(self.h+1, self.v+1)
+                if isinstance(x,PieceNoire):
+                    moves.append((self.h+1, self.v+1))
         return moves
 
 class PionNoir(Pion, PieceNoire):
     def __init__(self):
-        print("cons PionNoir")
         Pion.__init__(self)
         PieceNoire.__init__(self)
 
@@ -110,6 +117,19 @@ class PionNoir(Pion, PieceNoire):
             if isinstance(x, CaseVide):
                 moves.append((self.h, self.v-1))
 
+        return moves
+
+    def getControls(self):
+        moves = []
+        if self.v > 1:
+            if self.h > 0:
+                x = whatPos(self.h-1, self.v-1)
+                if isinstance(x, PieceBlanche):
+                    moves.append((self.h-1, self.v-1))
+            if self.h < 7:
+                x = whatPos(self.h+1, self.v-1)
+                if isinstance(x,PieceBlanche):
+                    moves.append((self.h+1, self.v-1))
         return moves
 
 class Cavalier(Piece):
@@ -142,8 +162,10 @@ class Cavalier(Piece):
         x = whatPos(self.h-2, self.v-1)
         if isinstance(x,self.adverse) or isinstance(x,CaseVide):
             moves.append((self.h-2, self.v-1))
-
         return moves
+
+    def getControls(self):
+        return self.getMoves()
 
     def setAdverse(self, adverse):
         self.adverse = adverse
@@ -160,6 +182,243 @@ class CavalierNoir(Cavalier, PieceNoire):
         PieceNoire.__init__(self)
         Cavalier.setAdverse(self, PieceBlanche)
 
+class Fou(Piece):
+    def __init__(self):
+        pass
+
+    def getMoves(self):
+        moves = []
+        for i in range(1,8):
+            x = whatPos(self.h+i, self.v+i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h+i, self.v+i))
+        for i in range(1,8):
+            x = whatPos(self.h+i, self.v-i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h+i, self.v-i))
+        for i in range(1,8):
+            x = whatPos(self.h-i, self.v-i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h-i, self.v-i))
+        for i in range(1,8):
+            x = whatPos(self.h-i, self.v+i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h-i, self.v+i))
+        return moves
+
+    def getControls(self):
+        return self.getControls()
+
+    def setAdverse(self, adverse):
+        self.adverse = adverse
+
+    def setFriend(self, friend):
+        self.friend = friend
+
+class FouBlanc(Fou, PieceBlanche):
+    def __init__(self):
+        Fou.__init__(self)
+        PieceBlanche.__init__(self)
+        Fou.setAdverse(self, PieceNoire)
+        Fou.setFriend(self,PieceBlanche)
+
+class FouNoir(Fou, PieceNoire):
+    def __init__(self):
+        Fou.__init__(self)
+        PieceNoire.__init__(self)
+        Fou.setAdverse(self, PieceBlanche)
+        Fou.setFriend(self,PieceNoire)
+
+class Tour(Piece):
+    def __init__(self):
+        pass
+
+    def setAdverse(self, adverse):
+        self.adverse = adverse
+
+    def setFriend(self,friend):
+        self.friend = friend
+
+    def getMoves(self):
+        moves = []
+        for i in range(1,8):
+            x = whatPos(self.h, self.v+i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h, self.v+i))
+        for i in range(1,8):
+            x = whatPos(self.h+i, self.v)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h+i, self.v))
+        for i in range(1,8):
+            x = whatPos(self.h, self.v-i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h, self.v-i))
+        for i in range(1,8):
+            x = whatPos(self.h-i, self.v)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h-i, self.v))
+        return moves
+
+    def getControls(self):
+        return self.getMoves()
+    
+
+class TourBlanche(Tour, PieceBlanche):
+    def __init__(self):
+        Tour.__init__(self)
+        PieceBlanche.__init__(self)
+        Tour.setAdverse(self,PieceNoire)
+        Tour.setFriend(self, PieceBlanche)
+
+class TourNoire(Tour, PieceNoire):
+    def __init__(self):
+        Tour.__init__(self)
+        PieceNoire.__init__(self)
+        Tour.setAdverse(self,PieceBlanche)
+        Tour.setFriend(self,PieceNoire)
+
+class Dame(Piece):
+    def __init__(self):
+        pass
+
+    def setAdverse(self, adverse):
+        self.adverse = adverse
+
+    def setFriend(self,friend):
+        self.friend = friend
+
+    def getMoves(self):
+        moves = []
+        for i in range(1,8):
+            x = whatPos(self.h, self.v+i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h, self.v+i))
+        for i in range(1,8):
+            x = whatPos(self.h+i, self.v)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h+i, self.v))
+        for i in range(1,8):
+            x = whatPos(self.h, self.v-i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h, self.v-i))
+        for i in range(1,8):
+            x = whatPos(self.h-i, self.v)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h-i, self.v))
+        for i in range(1,8):
+            x = whatPos(self.h+i, self.v+i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h+i, self.v+i))
+        for i in range(1,8):
+            x = whatPos(self.h+i, self.v-i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h+i, self.v-i))
+        for i in range(1,8):
+            x = whatPos(self.h-i, self.v-i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h-i, self.v-i))
+        for i in range(1,8):
+            x = whatPos(self.h-i, self.v+i)
+            if isinstance(x,self.friend):
+                break
+            if isinstance(x,self.adverse) or isinstance(x,CaseVide):
+                moves.append((self.h-i, self.v+i))
+        return moves
+
+    def getControls(self):
+        return self.getMoves()
+
+
+class DameBlanche(Dame, PieceBlanche):
+    def __init__(self):
+        Dame.__init__(self)
+        PieceBlanche.__init__(self)
+        Dame.setAdverse(self,PieceNoire)
+        Dame.setFriend(self,PieceBlanche)
+
+class DameNoire(Dame,PieceNoire):
+    def __init__(self):
+        Dame.__init__(self)
+        PieceNoire.__init__(self)
+        Dame.setAdverse(self,PieceBlanche)
+        Dame.setFriend(self,PieceNoire)
+
+class Roi(Piece):
+    def __init__(self):
+        pass
+
+    def getMoves(self):
+        moves = []
+        x = whatPos(self.h, self.v+1)
+        if isinstance(x, CaseVide):
+            moves.append((self.h, self.v+1))
+        x = whatPos(self.h+1, self.v+1)
+        if isinstance(x, CaseVide):
+            moves.append((self.h+1, self.v+1))
+        x = whatPos(self.h+1, self.v)
+        if isinstance(x, CaseVide):
+            moves.append((self.h+1, self.v))
+        x = whatPos(self.h+1, self.v-1)
+        if isinstance(x, CaseVide):
+            moves.append((self.h+1, self.v-1))
+        x = whatPos(self.h, self.v-1)
+        if isinstance(x, CaseVide):
+            moves.append((self.h, self.v-1))
+        x = whatPos(self.h-1, self.v-1)
+        if isinstance(x, CaseVide):
+            moves.append((self.h-1, self.v-1))
+        x = whatPos(self.h-1, self.v)
+        if isinstance(x, CaseVide):
+            moves.append((self.h-1, self.v))
+        x = whatPos(self.h-1, self.v+1)
+        if isinstance(x, CaseVide):
+            moves.append((self.h-1, self.v+1))
+        return moves
+
+    def getControls(self):
+        return self.getMoves()
+
+
+class RoiBlanc(Roi, PieceBlanche):
+    def __init__(self):
+        Roi.__init__(self)
+        PieceBlanche.__init__(self)
+
+class RoiNoir(Roi, PieceNoire):
+    def __init__(self):
+        Roi.__init__(self)
+        PieceNoire.__init__(self)
+
 
 def place(piece, norm):
     pos = normToPos(norm)
@@ -169,6 +428,13 @@ def place(piece, norm):
 def getMoves(piece):
     mymoves = []
     moves = piece.getMoves()
+    for m in moves:
+        mymoves.append(posToNorm(m))
+    return mymoves
+
+def getControls(piece):
+    mymoves = []
+    moves = piece.getControls()
     for m in moves:
         mymoves.append(posToNorm(m))
     return mymoves
@@ -225,6 +491,7 @@ place(pn5,'E7')
 place(pn6,'F7')
 place(pn7,'G7')
 place(pn8,'H8')
+
 cb1 = CavalierBlanc()
 cb2 = CavalierBlanc()
 cn1 = CavalierNoir()
@@ -233,8 +500,37 @@ place(cb1,'B1')
 place(cb2,'G1')
 place(cn1,'B8')
 place(cn2,'G8')
-m = getMoves(cn1)
+
+fb1 = FouBlanc()
+fb2 = FouBlanc()
+fn1 = FouNoir()
+fn2 = FouNoir()
+place(fb1,'C1')
+place(fb2,'F1')
+place(fn1,'C8')
+place(fn2,'F8')
+
+tb1 = TourBlanche()
+tb2 = TourBlanche()
+tn1 = TourNoire()
+tn2 = TourNoire()
+place(tb1,'A1')
+place(tb2,'H1')
+place(tn1,'A8')
+place(tn2,'H8')
+
+db = DameBlanche()
+dn = DameNoire()
+place(db,'D1')
+place(dn,'D8')
+
+rn = RoiNoir()
+rb = RoiBlanc()
+place(rb,'E1')
+place(rn,'E8')
+
+m = getControls(rn)
 print(m)
-print(cn1.getColor())
+print(rn.getColor())
 
 
